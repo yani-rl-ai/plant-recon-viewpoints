@@ -1,0 +1,253 @@
+<?xml version="1.0"?>
+<!-- Gazebo (Fortress) model of the same robot as tb3_plant.urdf.xacro: TurtleBot3 Burger physics and
+     DiffDrive copied from the working tb3_fortress_sim model (lidar removed on purpose: the scenario
+     is odometry only), plus pole, tilt joint with position controller and an RGB-D camera.
+     Spawned with:  ros_gz_sim create -string "$(xacro tb3_plant.sdf.xacro)" -->
+<sdf version="1.8" xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:include filename="$(find plant_sim)/urdf/common.xacro"/>
+  <xacro:property name="pole_len" value="${pole_top_z - pole_z0}"/>
+  <xacro:macro name="wheel_surface">
+    <surface>
+      <friction><ode><mu>100000.0</mu><mu2>100000.0</mu2><fdir1>0 0 0</fdir1><slip1>0.0</slip1><slip2>0.0</slip2></ode></friction>
+      <contact><ode><soft_cfm>0</soft_cfm><soft_erp>0.2</soft_erp><kp>1e+5</kp><kd>1</kd><max_vel>0.01</max_vel><min_depth>0.001</min_depth></ode></contact>
+    </surface>
+  </xacro:macro>
+  <model name="tb3_plant">
+    <link name="base_footprint"/>
+
+    <link name="base_link">
+      <inertial>
+        <pose>-0.064 0 0.070 0 0 0</pose>
+        <inertia><ixx>1.9527e-02</ixx><ixy>0</ixy><ixz>0</ixz><iyy>1.9527e-02</iyy><iyz>0</iyz><izz>1.9527e-02</izz></inertia>
+        <mass>0.82573504</mass>
+      </inertial>
+      <collision name="base_collision">
+        <pose>-0.032 0 0.070 0 0 0</pose>
+        <geometry><box><size>0.14 0.14 0.14</size></box></geometry>
+      </collision>
+      <visual name="base_visual">
+        <pose>-0.032 0 0 0 0 0</pose>
+        <geometry><mesh><uri>model://tb3_assets/meshes/bases/burger_base.stl</uri><scale>0.001 0.001 0.001</scale></mesh></geometry>
+        <material><ambient>0.3 0.3 0.3 1</ambient><diffuse>0.3 0.3 0.3 1</diffuse></material>
+      </visual>
+    </link>
+
+    <link name="imu_link">
+      <sensor name="tb3_imu" type="imu">
+        <always_on>true</always_on>
+        <update_rate>200</update_rate>
+        <topic>imu</topic>
+        <imu>
+          <angular_velocity>
+            <x><noise type="gaussian"><mean>0.0</mean><stddev>2e-4</stddev></noise></x>
+            <y><noise type="gaussian"><mean>0.0</mean><stddev>2e-4</stddev></noise></y>
+            <z><noise type="gaussian"><mean>0.0</mean><stddev>2e-4</stddev></noise></z>
+          </angular_velocity>
+          <linear_acceleration>
+            <x><noise type="gaussian"><mean>0.0</mean><stddev>1.7e-2</stddev></noise></x>
+            <y><noise type="gaussian"><mean>0.0</mean><stddev>1.7e-2</stddev></noise></y>
+            <z><noise type="gaussian"><mean>0.0</mean><stddev>1.7e-2</stddev></noise></z>
+          </linear_acceleration>
+        </imu>
+      </sensor>
+    </link>
+
+    <link name="wheel_left_link">
+      <inertial>
+        <pose>0 0.08 0.023 -1.57 0 0</pose>
+        <inertia><ixx>5.445e-05</ixx><ixy>0</ixy><ixz>0</ixz><iyy>5.445e-05</iyy><iyz>0</iyz><izz>1.089e-04</izz></inertia>
+        <mass>0.1</mass>
+      </inertial>
+      <collision name="wheel_left_collision">
+        <pose>0 0.08 0.023 -1.57 0 0</pose>
+        <geometry><cylinder><radius>0.033</radius><length>0.018</length></cylinder></geometry>
+        <xacro:wheel_surface/>
+      </collision>
+      <visual name="wheel_left_visual">
+        <pose>0 0.08 0.023 0 0 0</pose>
+        <geometry><mesh><uri>model://tb3_assets/meshes/wheels/left_tire.stl</uri><scale>0.001 0.001 0.001</scale></mesh></geometry>
+        <material><ambient>0.12 0.12 0.12 1</ambient><diffuse>0.12 0.12 0.12 1</diffuse></material>
+      </visual>
+    </link>
+
+    <link name="wheel_right_link">
+      <inertial>
+        <pose>0 -0.08 0.023 -1.57 0 0</pose>
+        <inertia><ixx>5.445e-05</ixx><ixy>0</ixy><ixz>0</ixz><iyy>5.445e-05</iyy><iyz>0</iyz><izz>1.089e-04</izz></inertia>
+        <mass>0.1</mass>
+      </inertial>
+      <collision name="wheel_right_collision">
+        <pose>0 -0.08 0.023 -1.57 0 0</pose>
+        <geometry><cylinder><radius>0.033</radius><length>0.018</length></cylinder></geometry>
+        <xacro:wheel_surface/>
+      </collision>
+      <visual name="wheel_right_visual">
+        <pose>0 -0.08 0.023 0 0 0</pose>
+        <geometry><mesh><uri>model://tb3_assets/meshes/wheels/right_tire.stl</uri><scale>0.001 0.001 0.001</scale></mesh></geometry>
+        <material><ambient>0.12 0.12 0.12 1</ambient><diffuse>0.12 0.12 0.12 1</diffuse></material>
+      </visual>
+    </link>
+
+    <link name="caster_back_link">
+      <pose>-0.081 0 -0.004 -1.57 0 0</pose>
+      <inertial>
+        <mass>0.005</mass>
+        <inertia><ixx>0.00001</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.00001</iyy><iyz>0</iyz><izz>0.00001</izz></inertia>
+      </inertial>
+      <collision name="collision">
+        <geometry><sphere><radius>0.005</radius></sphere></geometry>
+        <surface><contact><ode><soft_cfm>0</soft_cfm><soft_erp>0.2</soft_erp><kp>1e+5</kp><kd>1</kd><max_vel>0.01</max_vel><min_depth>0.001</min_depth></ode></contact></surface>
+      </collision>
+    </link>
+
+    <!-- 270 deg / 10 m laser scanner (link frame == sensor frame; model frame == base_link) -->
+    <link name="base_scan">
+      <pose>${lidar_x} 0 ${lidar_z} 0 0 0</pose>
+      <inertial>
+        <mass>0.1</mass>
+        <inertia><ixx>1e-4</ixx><ixy>0</ixy><ixz>0</ixz><iyy>1e-4</iyy><iyz>0</iyz><izz>1e-4</izz></inertia>
+      </inertial>
+      <collision name="lidar_collision">
+        <geometry><cylinder><radius>${lidar_r}</radius><length>${lidar_h}</length></cylinder></geometry>
+      </collision>
+      <visual name="lidar_visual">
+        <geometry><cylinder><radius>${lidar_r}</radius><length>${lidar_h}</length></cylinder></geometry>
+        <material><ambient>0.12 0.12 0.12 1</ambient><diffuse>0.12 0.12 0.12 1</diffuse></material>
+      </visual>
+      <sensor name="laser" type="gpu_lidar">
+        <always_on>true</always_on>
+        <visualize>true</visualize>
+        <update_rate>${lidar_rate}</update_rate>
+        <topic>scan</topic>
+        <ignition_frame_id>base_scan</ignition_frame_id>
+        <lidar>
+          <scan>
+            <horizontal>
+              <samples>${lidar_samples}</samples>
+              <resolution>1</resolution>
+              <min_angle>${-lidar_fov / 2}</min_angle>
+              <max_angle>${lidar_fov / 2}</max_angle>
+            </horizontal>
+          </scan>
+          <range><min>${lidar_range_min}</min><max>${lidar_range_max}</max><resolution>0.01</resolution></range>
+          <noise><type>gaussian</type><mean>0.0</mean><stddev>0.01</stddev></noise>
+        </lidar>
+      </sensor>
+    </link>
+
+    <!-- 1 m pole (aluminium tube, 0.2 kg) -->
+    <link name="camera_pole_link">
+      <!-- NOTE: as in the TB3 SDF the model frame == base_link (the model is spawned at z = 0.010 so
+           the wheels touch the floor), hence no +0.010 here; the TF tree of the URDF agrees. -->
+      <pose>${pole_x} 0 ${pole_z0 + pole_len / 2} 0 0 0</pose>
+      <inertial>
+        <mass>0.2</mass>
+        <inertia><ixx>${0.2 * (3 * pole_r * pole_r + pole_len * pole_len) / 12}</ixx><ixy>0</ixy><ixz>0</ixz>
+                 <iyy>${0.2 * (3 * pole_r * pole_r + pole_len * pole_len) / 12}</iyy><iyz>0</iyz>
+                 <izz>${0.2 * pole_r * pole_r / 2}</izz></inertia>
+      </inertial>
+      <collision name="pole_collision">
+        <geometry><cylinder><radius>${pole_r}</radius><length>${pole_len}</length></cylinder></geometry>
+      </collision>
+      <visual name="pole_visual">
+        <geometry><cylinder><radius>${pole_r}</radius><length>${pole_len}</length></cylinder></geometry>
+        <material><ambient>0.75 0.77 0.8 1</ambient><diffuse>0.75 0.77 0.8 1</diffuse></material>
+      </visual>
+      <visual name="bracket_visual">
+        <pose>${(cam_axis_x - pole_x) / 2} 0 ${pole_top_z + 0.010 - (pole_z0 + pole_len / 2)} 0 0 0</pose>
+        <geometry><box><size>${cam_axis_x - pole_x + 0.02} 0.03 0.02</size></box></geometry>
+        <material><ambient>0.75 0.77 0.8 1</ambient><diffuse>0.75 0.77 0.8 1</diffuse></material>
+      </visual>
+    </link>
+
+    <!-- tilt link: camera body + RGB-D sensor.  Inertia is deliberately larger than the real
+         0.15 kg box so the position controller stays smooth at the 2 ms physics step. -->
+    <link name="camera_tilt_link">
+      <pose>${cam_axis_x} 0 ${cam_axis_z} 0 0 0</pose>
+      <inertial>
+        <mass>0.15</mass>
+        <inertia><ixx>6e-4</ixx><ixy>0</ixy><ixz>0</ixz><iyy>1e-3</iyy><iyz>0</iyz><izz>6e-4</izz></inertia>
+      </inertial>
+      <visual name="camera_visual">
+        <geometry><box><size>${cam_dx} ${cam_dy} ${cam_dz}</size></box></geometry>
+        <material><ambient>0.12 0.12 0.12 1</ambient><diffuse>0.12 0.12 0.12 1</diffuse></material>
+      </visual>
+      <sensor name="zed_rgbd" type="rgbd_camera">
+        <pose>${cam_lens_x} 0 0 0 0 0</pose>
+        <always_on>true</always_on>
+        <update_rate>${cam_rate}</update_rate>
+        <topic>camera</topic>
+        <ignition_frame_id>camera_optical_frame</ignition_frame_id>
+        <camera>
+          <horizontal_fov>${hfov}</horizontal_fov>
+          <image><width>${img_w}</width><height>${img_h}</height><format>R8G8B8</format></image>
+          <clip><near>${clip_near}</near><far>${clip_far}</far></clip>
+          <depth_camera><clip><near>${clip_near}</near><far>${clip_far}</far></clip></depth_camera>
+        </camera>
+      </sensor>
+    </link>
+
+    <joint name="base_joint" type="fixed"><parent>base_footprint</parent><child>base_link</child><pose>0 0 0.010 0 0 0</pose></joint>
+    <joint name="wheel_left_joint" type="revolute">
+      <parent>base_link</parent><child>wheel_left_link</child>
+      <pose>0 0.08 0.023 -1.57 0 0</pose>
+      <axis><xyz>0 0 1</xyz><limit><effort>20</effort></limit></axis>
+    </joint>
+    <joint name="wheel_right_joint" type="revolute">
+      <parent>base_link</parent><child>wheel_right_link</child>
+      <pose>0 -0.08 0.023 -1.57 0 0</pose>
+      <axis><xyz>0 0 1</xyz><limit><effort>20</effort></limit></axis>
+    </joint>
+    <joint name="caster_back_joint" type="ball"><parent>base_link</parent><child>caster_back_link</child></joint>
+    <joint name="imu_joint" type="fixed"><parent>base_link</parent><child>imu_link</child><pose>-0.032 0 0.068 0 0 0</pose></joint>
+    <joint name="scan_joint" type="fixed"><parent>base_link</parent><child>base_scan</child></joint>
+    <joint name="pole_joint" type="fixed"><parent>base_link</parent><child>camera_pole_link</child></joint>
+    <joint name="camera_tilt_joint" type="revolute">
+      <parent>base_link</parent><child>camera_tilt_link</child>
+      <axis>
+        <xyz>0 1 0</xyz>
+        <limit><lower>${-tilt_limit}</lower><upper>${tilt_limit}</upper><effort>5</effort><velocity>1.5</velocity></limit>
+        <dynamics><damping>0.05</damping></dynamics>
+      </axis>
+    </joint>
+
+    <plugin filename="ignition-gazebo-diff-drive-system" name="ignition::gazebo::systems::DiffDrive">
+      <left_joint>wheel_left_joint</left_joint>
+      <right_joint>wheel_right_joint</right_joint>
+      <!-- calibrated, not the nominal 0.160: with the 18 mm wide wheels the real track is slightly narrower;
+           measured against Gazebo's true pose the robot turned 2.15 % more than the odometry said
+           (+7 deg per 360 deg turn), see scripts/calibrate_odom.py -->
+      <wheel_separation>${wheel_separation_eff}</wheel_separation>
+      <wheel_radius>0.033</wheel_radius>
+      <!-- gentle limits: the 1 m pole raises the centre of mass -->
+      <max_linear_acceleration>0.5</max_linear_acceleration>
+      <max_angular_acceleration>1.0</max_angular_acceleration>
+      <topic>cmd_vel</topic>
+      <odom_topic>odom</odom_topic>
+      <frame_id>odom</frame_id>
+      <child_frame_id>base_footprint</child_frame_id>
+      <odom_publisher_frequency>30</odom_publisher_frequency>
+      <tf_topic>/tf</tf_topic>
+    </plugin>
+
+    <plugin filename="ignition-gazebo-joint-state-publisher-system" name="ignition::gazebo::systems::JointStatePublisher">
+      <topic>joint_states</topic>
+      <joint_name>wheel_left_joint</joint_name>
+      <joint_name>wheel_right_joint</joint_name>
+      <joint_name>camera_tilt_joint</joint_name>
+    </plugin>
+
+    <plugin filename="ignition-gazebo-joint-position-controller-system" name="ignition::gazebo::systems::JointPositionController">
+      <joint_name>camera_tilt_joint</joint_name>
+      <topic>camera_tilt/cmd</topic>
+      <!-- explicit-integration stability: d_gain * dt / Iyy = 0.6 * 0.002 / 1e-3 = 1.2 < 2 -->
+      <p_gain>20</p_gain>
+      <i_gain>10</i_gain>
+      <d_gain>0.6</d_gain>
+      <i_max>1</i_max>
+      <i_min>-1</i_min>
+      <cmd_max>5</cmd_max>
+      <cmd_min>-5</cmd_min>
+    </plugin>
+  </model>
+</sdf>

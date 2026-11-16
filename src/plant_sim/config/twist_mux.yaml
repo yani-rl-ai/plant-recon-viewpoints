@@ -1,0 +1,20 @@
+# Who may drive the robot (highest priority wins; a source that is silent for `timeout` seconds is ignored):
+#   /cmd_vel_teleop    keyboard teleop (teleop_keyboard.py)                 priority 100
+#   /cmd_vel_nav_out   Nav2 (velocity_smoother output)                      priority  50
+#   /cmd_vel           anything else (auto_map.py, test scripts, ...)       priority  10
+# Output: /cmd_vel_mux  -> bridge -> Gazebo /cmd_vel (DiffDrive).  The robot stops 0.5 s after the last command.
+twist_mux:
+  ros__parameters:
+    topics:
+      teleop:
+        topic: cmd_vel_teleop
+        timeout: 0.5
+        priority: 100
+      navigation:
+        topic: cmd_vel_nav_out
+        timeout: 0.5
+        priority: 50
+      generic:
+        topic: cmd_vel
+        timeout: 0.5
+        priority: 10

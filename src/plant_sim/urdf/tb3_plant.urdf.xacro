@@ -1,0 +1,113 @@
+<?xml version="1.0"?>
+<!-- TurtleBot3 Burger + 1 m pole + motorised-tilt RGB-D camera (no lidar).
+     Used by robot_state_publisher / RViz.  TF frames: base_footprint, base_link, wheel_*_link,
+     caster_back_link, imu_link, camera_pole_link, camera_tilt_link (joint camera_tilt_joint),
+     camera_link, camera_optical_frame (z forward, x right, y down - frame_id of the images). -->
+<robot name="tb3_plant" xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:include filename="$(find plant_sim)/urdf/common.xacro"/>
+  <xacro:property name="mesh_root" value="package://plant_sim/models/tb3_assets/meshes"/>
+  <xacro:property name="pole_len" value="${pole_top_z - pole_z0}"/>
+
+  <material name="dark"><color rgba="0.3 0.3 0.3 1"/></material>
+  <material name="black"><color rgba="0.12 0.12 0.12 1"/></material>
+  <material name="alu"><color rgba="0.75 0.77 0.80 1"/></material>
+
+  <link name="base_footprint"/>
+  <joint name="base_joint" type="fixed">
+    <parent link="base_footprint"/><child link="base_link"/>
+    <origin xyz="0 0 0.010" rpy="0 0 0"/>
+  </joint>
+  <link name="base_link">
+    <visual>
+      <origin xyz="-0.032 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="${mesh_root}/bases/burger_base.stl" scale="0.001 0.001 0.001"/></geometry>
+      <material name="dark"/>
+    </visual>
+  </link>
+
+  <!-- wheels: the TB3 URDF rotates the joint by -90 deg about x and the visual back by +90 deg -->
+  <xacro:macro name="wheel" params="side y mesh">
+    <joint name="wheel_${side}_joint" type="continuous">
+      <parent link="base_link"/><child link="wheel_${side}_link"/>
+      <origin xyz="0 ${y} 0.023" rpy="-1.5708 0 0"/>
+      <axis xyz="0 0 1"/>
+    </joint>
+    <link name="wheel_${side}_link">
+      <visual>
+        <origin xyz="0 0 0" rpy="1.5708 0 0"/>
+        <geometry><mesh filename="${mesh_root}/wheels/${mesh}" scale="0.001 0.001 0.001"/></geometry>
+        <material name="black"/>
+      </visual>
+    </link>
+  </xacro:macro>
+  <xacro:wheel side="left" y="0.08" mesh="left_tire.stl"/>
+  <xacro:wheel side="right" y="-0.08" mesh="right_tire.stl"/>
+
+  <joint name="caster_back_joint" type="fixed">
+    <parent link="base_link"/><child link="caster_back_link"/>
+    <origin xyz="-0.081 0 -0.004" rpy="-1.5708 0 0"/>
+  </joint>
+  <link name="caster_back_link"/>
+
+  <joint name="imu_joint" type="fixed">
+    <parent link="base_link"/><child link="imu_link"/>
+    <origin xyz="-0.032 0 0.068" rpy="0 0 0"/>
+  </joint>
+  <link name="imu_link"/>
+
+  <!-- 270 deg / 10 m laser scanner; frame base_scan, x forward, scan angle 0 = straight ahead -->
+  <joint name="scan_joint" type="fixed">
+    <parent link="base_link"/><child link="base_scan"/>
+    <origin xyz="${lidar_x} 0 ${lidar_z}" rpy="0 0 0"/>
+  </joint>
+  <link name="base_scan">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><cylinder radius="${lidar_r}" length="${lidar_h}"/></geometry>
+      <material name="black"/>
+    </visual>
+  </link>
+
+  <!-- pole + bracket -->
+  <joint name="pole_joint" type="fixed">
+    <parent link="base_link"/><child link="camera_pole_link"/>
+    <origin xyz="${pole_x} 0 ${pole_z0 + pole_len / 2}" rpy="0 0 0"/>
+  </joint>
+  <link name="camera_pole_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><cylinder radius="${pole_r}" length="${pole_len}"/></geometry>
+      <material name="alu"/>
+    </visual>
+    <visual>
+      <origin xyz="${(cam_axis_x - pole_x) / 2} 0 ${pole_top_z + 0.010 - (pole_z0 + pole_len / 2)}" rpy="0 0 0"/>
+      <geometry><box size="${cam_axis_x - pole_x + 0.02} 0.03 0.02"/></geometry>
+      <material name="alu"/>
+    </visual>
+  </link>
+
+  <!-- tilt motor + camera -->
+  <joint name="camera_tilt_joint" type="revolute">
+    <parent link="base_link"/><child link="camera_tilt_link"/>
+    <origin xyz="${cam_axis_x} 0 ${cam_axis_z}" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="${-tilt_limit}" upper="${tilt_limit}" effort="5" velocity="1.5"/>
+  </joint>
+  <link name="camera_tilt_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><box size="${cam_dx} ${cam_dy} ${cam_dz}"/></geometry>
+      <material name="black"/>
+    </visual>
+  </link>
+  <joint name="camera_joint" type="fixed">
+    <parent link="camera_tilt_link"/><child link="camera_link"/>
+    <origin xyz="${cam_lens_x} 0 0" rpy="0 0 0"/>
+  </joint>
+  <link name="camera_link"/>
+  <joint name="camera_optical_joint" type="fixed">
+    <parent link="camera_link"/><child link="camera_optical_frame"/>
+    <origin xyz="0 0 0" rpy="-1.5707963 0 -1.5707963"/>
+  </joint>
+  <link name="camera_optical_frame"/>
+</robot>

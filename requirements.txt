@@ -1,0 +1,12 @@
+# Python packages for plant_recon and the scan manager (tested versions).
+# Install NumPy first and keep it below 2 (ROS 2 Humble's Python packages are built against NumPy 1.x):
+#     pip3 install --user "numpy==1.26.4"
+#     pip3 install --user -r requirements.txt
+# SciPy, Matplotlib and PyYAML come from apt (see docs/TUTORIAL.md).
+numpy==1.26.4
+open3d==0.19.0
+ultralytics==8.4.128
+# Any PyTorch / torchvision build with CUDA support works with the above (tested: torch 2.13.0, torchvision 0.28.0).
+torch
+torchvision
+pytest

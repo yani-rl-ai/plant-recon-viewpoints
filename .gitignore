@@ -1,0 +1,14 @@
+# colcon
+build/
+install/
+log/
+# data produced by the missions and downloaded weights
+results/
+models/*.pt
+datasets/
+# SLAM pose graphs are large and only needed to continue mapping
+src/plant_sim/maps/*_posegraph.*
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/

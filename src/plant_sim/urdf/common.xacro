@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<!-- Parameters shared by tb3_plant.urdf.xacro (RViz / TF) and tb3_plant.sdf.xacro (Gazebo),
+     so both descriptions describe the same robot by construction. All lengths in metres,
+     poses are expressed in base_link (TB3 Burger: base_link is 0.010 m above base_footprint). -->
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <!-- pole: 25 mm tube standing on the TB3 top plate, centred on the robot -->
+  <xacro:property name="pole_x" value="-0.032"/>
+  <xacro:property name="pole_r" value="0.0125"/>
+  <xacro:property name="pole_z0" value="0.162"/>
+  <!-- camera tilt axis: 1.000 m above the floor (0.990 above base_link), 7 cm ahead of the pole -->
+  <xacro:property name="cam_axis_x" value="0.040"/>
+  <xacro:property name="cam_axis_z" value="0.990"/>
+  <xacro:property name="pole_top_z" value="0.970"/>
+  <!-- tilt motor: + angle = camera looks DOWN (rotation about +y, x forward, z up) -->
+  <xacro:property name="tilt_limit" value="0.7854"/>
+  <!-- ZED2i body 175 x 30 x 33 mm, lens on the front face -->
+  <xacro:property name="cam_dx" value="0.030"/>
+  <xacro:property name="cam_dy" value="0.175"/>
+  <xacro:property name="cam_dz" value="0.033"/>
+  <xacro:property name="cam_lens_x" value="0.015"/>
+  <!-- image: 640 x 360, 110 deg horizontal FOV (ZED2i 4 mm lens), 0.3 .. 8 m -->
+  <xacro:property name="img_w" value="640"/>
+  <xacro:property name="img_h" value="360"/>
+  <xacro:property name="hfov" value="1.9199"/>
+  <xacro:property name="clip_near" value="0.3"/>
+  <xacro:property name="clip_far" value="8.0"/>
+  <xacro:property name="cam_rate" value="15"/>
+  <!-- DiffDrive wheel separation used by the controller AND the odometry: nominal 0.160 / 1.0215 -->
+  <xacro:property name="wheel_separation_eff" value="0.1566"/>
+  <!-- laser scanner (Hokuyo UST-10LX class): 270 deg, 10 m, 0.25 deg steps (1081 beams), 20 Hz.
+       Low-profile puck on the front of the TB3 top plate; scan plane 0.185 m above the floor so the
+       pots (0.20 m high) are seen.  The pole stands 6 cm behind it, inside the 90 deg blind sector. -->
+  <xacro:property name="lidar_x" value="0.030"/>
+  <xacro:property name="lidar_z" value="0.175"/>
+  <xacro:property name="lidar_r" value="0.0375"/>
+  <xacro:property name="lidar_h" value="0.026"/>
+  <xacro:property name="lidar_fov" value="4.712389"/>
+  <xacro:property name="lidar_samples" value="1081"/>
+  <xacro:property name="lidar_range_min" value="0.06"/>
+  <xacro:property name="lidar_range_max" value="10.0"/>
+  <xacro:property name="lidar_rate" value="20"/>
+</robot>
